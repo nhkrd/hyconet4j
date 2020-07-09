@@ -11,7 +11,7 @@ The OSS, "hyconet4j" is the part of the test tool that has been utilized as conf
 For more detail, see [Hybridcast-Connect instruction](./HybridcastConnect.md). For use of "hyconet4j", see [LICENSE](./LICENSE.txt) and [NOTICE](./NOTICE.txt).
 
 
-hyconet4jは、IPTV Forum Japanにおいて2018年９月に標準規格化された「ハイブリッドキャストコネクト」(以後、ハイコネ)のプロトコルを使うためのリファレンスSDK実装（ハイコネライブラリのJava実装）です。ハイコネを利用すると、放送受信機能の一部の制御を受信機外のアプリケーションから実行でき、その受信機および受信機上のHybridcastサービスのブラウザアプリケーションと通信もできます。本SDKはハイブリッドキャストコネクトのプロトコルテストで利用されているツールの一部をOSS化したものです。
+hyconet4jは、2018年9月にIPTV Forum Japanで標準規格化された「ハイブリッドキャストコネクト」(以後、ハイコネ)のプロトコルを使うためのリファレンスSDK（ハイコネライブラリのJava実装）です。ハイコネを利用すると、ハイブリッドキャスト対応テレビ（受信機）の一部の機能を、連携端末のアプリケーションから制御でき、その受信機および受信機上のHybridcastサービスのブラウザアプリケーションと通信もできます。本SDKはハイコネのプロトコルテストで利用されているツールの一部をOSS化したものです。
 
 詳しくは、[About "Hybridcast-Connect"](./HybridcastConnect.md)を参照ください。本ソフトウェアの利用に関しては、LICENSEおよびNOTICEファイルを参照ください。
 
@@ -90,7 +90,7 @@ Reference documents.
 
 Reference Documentsのディレクトリ。実装の例は./sampleを参照。
 
-- [hccp-apidocs.md](./docs/hccp-apidocs.md)
+- [apidocs.md](./docs/apidocs.md)
 
     Simple API reference  of "hyconet4j" and examples of these APIs. For more detail, see javadoc generated when building "hyconet4j" from source.
 
@@ -118,11 +118,11 @@ TVRCMan tvrcman = new TVRCMan() {
 }
 // 7秒毎の機器サーチ実行。機器が見つかったら終了。
 while(true){
-    tvrcman.search_start();
+    tvrcman.searchStart();
     try{
         Thread.sleep(7000);
     }catch(InterruptedException e){ }
-    tvrcman.search_stop();
+    tvrcman.searchStop();
     // 機器が見つかったらサーチ終了。
     if (tvrcman.getTVRCDevList().size() >= 1){
         break;
@@ -264,7 +264,7 @@ See [LICENSE.txt](./LICENSE.txt) and [NOTICE.txt](./NOTICE.txt).
 
 And see additional side information: "hyconet4j" repository includes third party's oss jar packages themselves  below in some reason:
 
-なお、本リポジトリには以下理由によりOSSパッケージを含みます。
+なお、本リポジトリは以下理由によりOSSパッケージを含みます。
 
 
 - cybergarage-upnp-core-2.1.1.jar
@@ -272,7 +272,7 @@ And see additional side information: "hyconet4j" repository includes third party
     - Repository: https://github.com/cybergarage/cybergarage-upnp
     - LICENSE: https://github.com/cybergarage/cybergarage-upnp/blob/master/LICENSE.txt
 
-    [当OSSのドキュメントに記載のMavenRepositoryのリンク](http://www.cybergarage.org:8080/maven/repo/)が不安定なため、当OSSを`maven install`して生成したjar package "cybergarage-upnp-core-2.1.1.jar"を本"hyconet4j"リポジトリは同梱
+    [当OSSのドキュメントに記載のMavenRepositoryのリンク](http://www.cybergarage.org:8080/maven/repo/)が不安定なため、当OSSを`maven install`して生成したjar package "cybergarage-upnp-core-2.1.1.jar"を本"hyconet4j"リポジトリは同梱しています。
 
     Cybergarase Public Repository can not be available frequently, so in a solution, this "hyconet4j" repository includes static jar package "cybergarage-upnp-core-2.1.1.jar" that is built with `maven install` from source code.
 
@@ -281,10 +281,6 @@ And see additional side information: "hyconet4j" repository includes third party
     - Repository: https://github.com/stleary/JSON-java
     - LICENSE: https://github.com/stleary/JSON-java/blob/master/LICENSE
 
-    JSONのjava実装のスタンダートのため利用。ただし、androidで利用する場合、[当OSSのpackageName "org.json"が競合する](https://github.com/stleary/JSON-java/wiki/JSON-Java-for-Android-developers)ため、本"hyconet4j"リポジトリにおいてはandroidでの利用を想定して、packageNameを"JSON-java"へ変更し、同梱して利用。
+    JSONのjava実装のスタンダートのため利用。ただし、androidで利用する場合、[当OSSのpackageName "org.json"が競合する](https://github.com/stleary/JSON-java/wiki/JSON-Java-for-Android-developers)ため、本"hyconet4j"リポジトリにおいてはandroidでの利用を想定して、packageNameを"JSON-java"へ変更し、同梱しています。
 
-    It is the standard Java implementation in JSON. But for Android Develepment, there's [confliction problem between JSON-java and android](https://github.com/stleary/JSON-java/wiki/JSON-Java-for-Android-developers), then this "hyconet4j" repository soloves the problem by changing package name from "org.json" to "JSON-java".
-
-
-
-
+    It is the standard Java implementation in JSON. But for Android Develepment, there's [confliction problem between JSON-java and android](https://github.com/stleary/JSON-java/wiki/JSON-Java-for-Android-developers), then this "hyconet4j" repository solves the problem by changing package name from "org.json" to "JSON-java".

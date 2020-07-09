@@ -34,8 +34,8 @@ Simple list of the hyconet4j APIs.
 
 | type | method | args | option | response_type | description |
 | --- | --- | --- | --- | --- | --- |
-| method | [search_start](#search_start) | --- | --- | --- | デバイス検索開始 |
-| method | [search_stop](#search_stop) | --- | --- | --- | デバイス検索停止 |
+| method | [searchStart](#searchStart) | --- | --- | --- | デバイス検索開始 |
+| method | [searchStop](#searchStop) | --- | --- | --- | デバイス検索停止 |
 | method | [onDeviceRegistered](#ondeviceregistered) | TVRCDevinfo | --- | --- | サーチレスポンスのcallbackListener |
 | method | [getTVRCDevList](#gettvrcdevlist) | --- | --- | ListTVRCDevinfo | デバイスリスト |
 | method | [getTVRCDevinfo](#gettvrcdevinfo) | int | required | TVRCDevinfo | 単体デバイス情報 |
@@ -52,8 +52,8 @@ Simple list of the hyconet4j APIs.
 | property | friendlyName | --- | --- | String | デバイスの表記名 |
 | property | applicationURL | --- | --- | String | DIALInfoAPIのベースURL名 |
 | method | get_maker | --- | --- | String | デバイスメーカー名 |
-| method | [getHCEXInfoURL](#gethcexinfourl) |--- | --- | TVRCStatus | （連携端末プロトコルv2.0）EndPoint情報取得用URLの取得|
-| method | [getHCEXInfo](#gethcexinfo) |--- | --- | TVRCStatus | （連携端末プロトコルv2.0）EndPoint情報取得|
+| method | [getDialAppResourceURL](#getdialappresourceurl) |--- | --- | TVRCStatus | （連携端末プロトコルv2.0）EndPoint情報取得用URLの取得|
+| method | [getDialAppInfo](#getdialappinfo) |--- | --- | TVRCStatus | （連携端末プロトコルv2.0）EndPoint情報取得|
 | method | [getAvailableMedia](#getavailablemedia) |--- | --- | TVRCStatus | （連携端末プロトコルv2.0）メディア可否情報取得|
 | method | [getChannelInfo](#getchannelinfo) | String media| --- | TVRCStatus | （連携端末プロトコルv2.0）選局可能チャンネル一覧取得|
 | method | [startAITControlledApp](#startaitcontrolledapp) | String mode, String(JSON) appinfo| ---, required | TVRCStatus | （連携端末プロトコルv2.0）HCアプリ起動要求|
@@ -138,12 +138,12 @@ TVRCMan tvrcman = new TVRCMan() {
 ### Search_start
 
 ```java
-TVRCMan.search_start();
+TVRCMan.searchStart();
 ```
 ### Search_stop
 
 ```java
-TVRCMan.search_stop();
+TVRCMan.searchStop();
 ```
 
 ## Deviceinfo
@@ -167,8 +167,8 @@ TVRCDevinfo tvdev = TVRCMan.getTVRCDevinfo(int index);
 
 // サーチが必要ない時は直接受信機メーカーとIP、ApplicationURLなどを指定し、applicationURLからendpoint情報を取得する
 // TVRCDevinfo tvdev = TVRCDevinfo(maker, ipaddr, uuid, locationURL, applicationURL);
-// tvdev.getHCEXInfoURL;  // emulator接続したい場合は必須
-// tvdev.getHCEXInfo;
+// tvdev.getDialAppResourceURL;  // emulator接続したい場合は必須
+// tvdev.getDialAppInfo;
 ```
 
 ---

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="urn:dial-multiscreen-org:schemas:dial" 
+    attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="urn:dial-multiscreen-org:schemas:dial" xmlns:iptv="urn:iptv:HybridcastApplication:2020">
+    
+    <xsd:import namespace="urn:iptv:HybridcastApplication:2020" schemaLocation="additionalData_HybridcastConnect_schema.xsd" />
+
+    <xsd:element name="service" type="ServiceType"/>
+
+    <xsd:complexType name="ServiceType">
+        <xsd:sequence>
+            <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="options" type="optionsType" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="state" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="link" type="linkType" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="additionalData" type="additionalDataType" minOccurs="1" maxOccurs="1">
+            </xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="dialVer" type="xsd:string" use="optional"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="optionsType">
+        <xsd:attribute name="allowStop" type="xsd:boolean" use="optional"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="linkType" mixed="true">
+        <xsd:attribute name="href" use="required" type="xsd:anyURI"/>
+        <xsd:attribute name="rel" type="xsd:string" use="optional"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="additionalDataType" >
+        <xsd:sequence>
+            <xsd:element ref="iptv:X_Hybridcast_ProtocolVersion" minOccurs="1" maxOccurs="1" />
+            <xsd:element ref="iptv:X_Hybridcast_App2AppURL" minOccurs="1" maxOccurs="1" />
+            <xsd:element ref="iptv:X_Hybridcast_TVControlURL" minOccurs="1" maxOccurs="1" />
+            <xsd:element ref="iptv:X_Hybridcast_ServerInfo" minOccurs="1" maxOccurs="1" />
+            <xsd:element ref="iptv:X_Hybridcast_ExternalLaunch" minOccurs="1" maxOccurs="1" />
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:schema>

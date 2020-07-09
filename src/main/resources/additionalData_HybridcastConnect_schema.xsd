@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="urn:iptv:HybridcastApplication:2020" 
+ xmlns:iptv="urn:iptv:HybridcastApplication:2020" targetNamespace="urn:iptv:HybridcastApplication:2020" >
+  <xsd:element name="X_Hybridcast_ProtocolVersion" type="xsd:string"/>
+  <xsd:element name="X_Hybridcast_App2AppURL" type="xsd:anyURI"/>
+  <xsd:element name="X_Hybridcast_TVControlURL" type="xsd:anyURI"/>
+  <xsd:element name="X_Hybridcast_ServerInfo" type="xsd:string"/>
+  <xsd:element name="X_Hybridcast_ExternalLaunch">
+    <xsd:complexType>
+      <xsd:attribute name="allowBroadcastOrientedManagedApp" type="xsd:boolean"/>
+      <xsd:attribute name="allowBroadcastIndependentManagedApp" type="xsd:boolean"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="additionalData" type="additionalDataType"/>
+  <xsd:complexType name="additionalDataType" >
+        <xsd:sequence>
+            <xsd:element ref="X_Hybridcast_ProtocolVersion" minOccurs="1" maxOccurs="1" />
+            <xsd:element ref="X_Hybridcast_App2AppURL" minOccurs="1" maxOccurs="1" />
+            <xsd:element ref="X_Hybridcast_TVControlURL" minOccurs="1" maxOccurs="1" />
+            <xsd:element ref="X_Hybridcast_ServerInfo" minOccurs="1" maxOccurs="1" />
+            <xsd:element ref="X_Hybridcast_ExternalLaunch" minOccurs="1" maxOccurs="1" />
+        </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>

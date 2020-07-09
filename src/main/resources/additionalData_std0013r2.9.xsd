@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    xmlns="urn:iptv:HybridcastApplication:2020" 
+    targetNamespace="urn:iptv:HybridcastApplication:2020" xmlns:iptv="urn:iptv:HybridcastApplication:2020" elementFormDefault="qualified">
+  <xs:element name="X_Hybridcast_ProtocolVersion" type="xs:string" minOccurs="1" maxOccurs="1"/>
+  <xs:element name="X_Hybridcast_App2AppURL" type="xs:anyURI" minOccurs="1" maxOccurs="1"/>
+  <xs:element name="X_Hybridcast_TVControlURL" type="xs:anyURI" minOccurs="1" maxOccurs="1"/>
+  <xs:element name="X_Hybridcast_ServerInfo" type="xs:string" minOccurs="1" maxOccurs="1"/>
+  <xs:element name="X_Hybridcast_ExternalLaunch" minOccurs="1" maxOccurs="1">
+    <xs:complexType>
+      <xs:attribute name="allowBroadcastOrientedManagedApp" type="xs:boolean"/>
+      <xs:attribute name="allowBroadcastIndependentManagedApp" type="xs:boolean"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

@@ -1,0 +1,59 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<xsd:schema targetNamespace="urn:schemas-upnp-org:device-1-0" xmlns="urn:schemas-upnp-org:device-1-0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xsd:element name="root" type="rootType"/>
+
+    <xsd:complexType name="anyElementType" mixed="true">
+        <xsd:choice>
+            <xsd:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="skip" />
+        </xsd:choice>
+    </xsd:complexType>
+    <xsd:complexType name="deviceType">
+        <xsd:sequence>
+            <xsd:element name="deviceType" type="anyElementType" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="friendlyName" minOccurs="1">
+                <xsd:complexType>
+                    <xsd:simpleContent>
+                        <xsd:extension base="xsd:string">
+                            <xsd:anyAttribute namespace="##any" processContents="lax"/>
+                        </xsd:extension>
+                    </xsd:simpleContent>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="manufacturer" minOccurs="1">
+                <xsd:complexType>
+                    <xsd:simpleContent>
+                        <xsd:extension base="xsd:string">
+                            <xsd:anyAttribute namespace="##any" processContents="lax"/>
+                        </xsd:extension>
+                    </xsd:simpleContent>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="modelName" minOccurs="1">
+                <xsd:complexType>
+                    <xsd:simpleContent>
+                        <xsd:extension base="xsd:string">
+                            <xsd:anyAttribute namespace="##any" processContents="lax"/>
+                        </xsd:extension>
+                    </xsd:simpleContent>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="UDN" minOccurs="1">
+                <xsd:complexType>
+                    <xsd:simpleContent>
+                        <xsd:extension base="xsd:anyURI">
+                            <xsd:anyAttribute namespace="##any" processContents="lax"/>
+                        </xsd:extension>
+                    </xsd:simpleContent>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:any namespace="##any" minOccurs="0" processContents="lax" />
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="##any" processContents="lax"/>
+    </xsd:complexType>
+    <xsd:complexType name="rootType">
+        <xsd:choice>
+            <xsd:element name="device" type="deviceType" minOccurs="1" maxOccurs="1"/>
+            <xsd:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="skip" />
+        </xsd:choice>
+    </xsd:complexType>
+</xsd:schema>

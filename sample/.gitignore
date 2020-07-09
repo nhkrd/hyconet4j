@@ -1,0 +1,35 @@
+# java
+*.class
+.classpath
+.project
+bin
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.war
+*.ear
+logs/*
+libs/*
+exlibs/*
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+
+/local.properties
+
+# Building with Gradle
+build/
+/.gradle/
+
+# Android Studio
+/.idea/
+*.iml
+.settings
+
+# Mac
+.DS_Store
+*.swp
+
