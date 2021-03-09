@@ -61,7 +61,7 @@
           "TD": {
             "$id": "/properties/body/properties/TD",
             "type": "string",
-            "title": "The Td Schema",
+            "title": "The Terrestrial Digital Schema",
             "default": "Available",
             "examples": [
               "Available"
@@ -74,7 +74,7 @@
           "BS": {
             "$id": "/properties/body/properties/BS",
             "type": "string",
-            "title": "The Bs Schema",
+            "title": "The BS Schema",
             "default": "Available",
             "examples": [
               "NotAvailable"
@@ -87,7 +87,46 @@
           "CS": {
             "$id": "/properties/body/properties/CS",
             "type": "string",
-            "title": "The Cs Schema",
+            "title": "The CS Schema",
+            "default": "Available",
+            "examples": [
+              "NotAvailable"
+            ],
+            "enum": [
+              "Available",
+              "NotAvailable"
+            ]
+          },
+          "ABS": {
+            "$id": "/properties/body/properties/TD",
+            "type": "string",
+            "title": "The Advanced BS Schema",
+            "default": "Available",
+            "examples": [
+              "Available"
+            ],
+            "enum": [
+              "Available",
+              "NotAvailable"
+            ]
+          },
+          "ACS": {
+            "$id": "/properties/body/properties/BS",
+            "type": "string",
+            "title": "The Advanced CS Schema",
+            "default": "Available",
+            "examples": [
+              "NotAvailable"
+            ],
+            "enum": [
+              "Available",
+              "NotAvailable"
+            ]
+          },
+          "NCS": {
+            "$id": "/properties/body/properties/CS",
+            "type": "string",
+            "title": "The Narrow Band CS Schema",
             "default": "Available",
             "examples": [
               "NotAvailable"
@@ -97,9 +136,9 @@
               "NotAvailable"
             ]
           }
-        },
-        "additionalProperties": false
-      }
+        }
+      },
+      "additionalProperties": false
     },
     "allOf": [
       {
@@ -110,7 +149,7 @@
       "then": {
         "properties": {
           "body": {
-            "required": [ "created_at", "TD", "BS", "CS" ]
+            "required": [ "created_at", "TD", "BS", "CS", "ABS", "ACS", "NCS" ]
           }
         }
       },

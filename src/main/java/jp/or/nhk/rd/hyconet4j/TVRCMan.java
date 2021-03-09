@@ -92,7 +92,7 @@ logger.trace("onDeviceInfoPrepared in TVRCMan: usn:" + usn );
 					onDeviceRegistered(dev);
 				}
 				catch(Exception e) {
-					logger.error("Check device Type: HCEX NG");
+					logger.error("Check device Type: HCEX NG " + e);
 				}
 			logger.trace("onDeviceInfoPrepared in TVRCMan: " + dev.getTVRC().get_maker() + " " + location + " " + urn + " " + dev.uuid + " " + fname + " " + mname);
 			}
