@@ -18,10 +18,25 @@ import org.json.JSONjava.XML;
 import org.json.JSONjava.*;
 import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+import org.w3c.dom.NamedNodeMap;
+
+
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ByteArrayInputStream;
 
 import java.net.URI;
 
@@ -47,19 +62,17 @@ public class ActHCEX extends HCEX {
 		}
 	}
 
-	private String baseURL = null;
-	private String wsURL = null;
-	private String serverInfo = null;
-	private String serverInfoProtocolVersion = null;
-
 	private Map<String, String> restApiEndpoints = new HashMap<String, String>() ;
 
 	private WebSocketClient wsc = null;
 
+	private static final String typeHyconetProtocol = "HCC";
+	private static final String typeHyconetProtocolAntwapp = "HCC(Antwapp)";
+
 	/**
 	 * ハイコネプロトコル仕様のRESTAPIのRequestBodyのエンコード処理を実装するAPI。
 	 * 各デバイスとのセッションごとに処理を実装できる。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param str エンコード対象の文字列
 	 * @return エンコード処理後の文字列
@@ -74,7 +87,7 @@ public class ActHCEX extends HCEX {
 	/**
 	 * ハイコネプロトコル仕様のRESTAPIのResponseBodyのデコード処理を実装するAPI。
 	 * 各デバイスとのセッションごとに処理を実装できる。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param str エンコード対象の文字列
 	 * @return エンコード処理後の文字列
@@ -89,7 +102,7 @@ public class ActHCEX extends HCEX {
 	/**
 	 * ハイコネプロトコル仕様の連携端末通信websocketを使って送信する文字列のエンコード処理を実装するAPI。
 	 * 各デバイスとのセッションごとに処理を実装できる。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param str エンコード対象の文字列
 	 * @return エンコード処理後の文字列
@@ -104,7 +117,7 @@ public class ActHCEX extends HCEX {
 	/**
 	 * ハイコネプロトコル仕様の連携端末通信websocketを使って受信した文字列のデコード処理を実装するAPI。
 	 * 各デバイスとのセッションごとに処理を実装できる。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param str エンコード対象の文字列
 	 * @return エンコード処理後の文字列
@@ -118,7 +131,7 @@ public class ActHCEX extends HCEX {
 
 	/**
 	 * ハイコネプロトコル仕様のRESTAPIのRequestHeaderを取得する処理を実装するAPI。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return 取得・処理したRequestHeaderのHashリスト
 	 * @throws Exception 例外
@@ -141,7 +154,7 @@ public class ActHCEX extends HCEX {
 	/**
 	 * Generic HTTPRequest for hyconet4j.
 	 * ハイコネRestAPIで利用する汎用的なHTTPRequestAPI
-	 * 
+	 *
 	 * @param method method name in HTTP
 	 * @param devinfo デバイス情報オブジェクト
 	 * @param url request対象のURL
@@ -203,19 +216,26 @@ logger.debug("Raw 200 Res: " + res + " url: " + url);
 					status.setStatus( responseCode, res, err);
 				}
 				else { // 200/201以外の時もbodyがあれば返す。getErrorStreamになることに注意
+					InputStream errsin = con.getErrorStream();
+					if( errsin != null ) {
+						BufferedReader in = new BufferedReader(new InputStreamReader(errsin));
+						if( in != null ) {
+							String inputLine;
+							while ((inputLine = in.readLine()) != null) {
+								response.append(inputLine);
+							}
+							in.close();
 
-					BufferedReader in = new BufferedReader(new InputStreamReader(con.getErrorStream()));
-					String inputLine;
-					while ((inputLine = in.readLine()) != null) {
-						response.append(inputLine);
-					}
-					in.close();
-
-					String res = response.toString();
+							String res = response.toString();
 logger.debug("Raw Err Res: " + res + " url: " + url);
-					// for each device and each session, change decode processing.
-					res = decodeBodyString(devinfo, res);
-					status.setStatus(responseCode, res, String.format("%s", con.getResponseMessage()) );
+							// for each device and each session, change decode processing.
+							res = decodeBodyString(devinfo, res);
+							status.setStatus(responseCode, res, String.format("%s", con.getResponseMessage()) );
+						}
+						else {
+							status.setStatus(responseCode, "", "" );
+						}
+					}
 				}
 			}
 			catch(ConnectException e) {
@@ -223,7 +243,6 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 			}catch(SocketException e) {
 				status.setStatus(TVRCStatus.Status.ServiceUnavailable.code(), "", "Internal Connection Error: "+ e);
 			}
-
 		}
 		else {
 			// paramsCheck internally => internal badrequest 50400
@@ -266,7 +285,7 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 
 	/**
 	 * ハイコネプロトコル対応確認情報の取得先URL(DialAppResourceURL)をApplicationURLから生成して取得する。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return Statusオブジェクトによる実行結果のレスポンス・失敗情報
 	 * @throws Exception 例外
@@ -276,7 +295,7 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 		TVRCStatus status = new TVRCStatus();
 
 		if(!devinfo.getMaker().toUpperCase().equals("HCXPGenericTVRC")){
-			devType = devinfo.getMaker().toUpperCase(); // メーカープロトコルclassのmaker_name
+//			devType = devinfo.getMaker().toUpperCase(); // メーカープロトコルclassのmaker_name
 		}
 
 		// dev.applicationURL(baseurl)あれば、DIAL対応による発見とみなして、
@@ -287,8 +306,9 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 			}else{
 				dialAppResourceURL = devinfo.applicationURL + "/" + DIALInterface.applicationName;
 			}
-			devType = devType + "/HCEXProtocol" ;
-			
+//			devType = devType + "/HCEXProtocol" ;
+			devType = DIALInterface.devType + "/" + typeHyconetProtocol;
+
 			// success connection to antwapp emulator => 200OK
 			status.setStatus(TVRCStatus.Status.OK.code(), dialAppResourceURL, "") ;
 		}
@@ -299,7 +319,8 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 		String emuAppStatusURL = "http://" + devinfo.ipaddr + ":8887/apps/antwapp" ;
 		TVRCStatus status_emu = this.HTTPRequest( "GET", devinfo, emuAppStatusURL, null ) ;
 		if( status_emu.status == TVRCStatus.Status.OK.code() ) {
-			devType = devType + "/HCEXEmulator:Antwapp" ;
+//			devType = devType + "/HCEXEmulator:Antwapp" ;
+			devType = DIALInterface.devType + "/" + typeHyconetProtocolAntwapp;
 			dialAppResourceURL = emuAppStatusURL;
 			devinfo.applicationURL = emuAppStatusURL;
 			// success connection to antwapp emulator => 200OK
@@ -314,7 +335,7 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 		if( dialAppResourceURL == null ) {
 			// paramsCheck internally => internal badrequest 50400
 			status.setStatus(TVRCStatus.Status.BadRequestInternalProcessing.code(), "", "ApplicationURL in XML of DIALProtocol Not Found, and no support for HybridcastConnect");
-
+			devType = DIALInterface.devType;
 		}
 
 		return status;
@@ -324,7 +345,7 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 
 	/**
 	 * ハイコネ仕様の受信機が提供するハイコネプロトコル情報(APIEndpoint/serverinfo/version)をDialAppResourceURLのレスポンスDialAppInfoXMLから取得。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
 	 * @throws Exception 例外
@@ -340,6 +361,7 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 		else if( dialAppResourceURL == null ) {
 			// paramsCheck internally => internal badrequest 50400
 			status.setStatus(TVRCStatus.Status.BadRequestInternalProcessing.code(), "", "ApplicationURL in DIALProtocol Not Found");
+			devType = DIALInterface.devType;
 		}
 		else { // HCEXProtocolのDIAL InfoAPIによるデバイス情報存在確認
 			logger.debug("ApplicationResourceURL request: " + dialAppResourceURL);
@@ -348,36 +370,59 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 			if( status.status == TVRCStatus.Status.OK.code() ) {
 				try{
 					if(validateDialAppinfoXML(status.body)){
-						baseEndPoints = parseDialAppinfoXML(status.body); // getEndpoints from dialAppInfoXML
-						this.serverInfo = baseEndPoints.get("SERVER_INFO");
-						this.serverInfoProtocolVersion = baseEndPoints.get("PROTOCOL_VERSION");
-						setRestBaseURL(baseEndPoints.get("BASEURL"));
-						setWSURL(baseEndPoints.get("WSURL"));
-						// success to get info about HybridcastConnectInformation from TV Set.
-						status.setStatus(TVRCStatus.Status.OK.code(), status.body, "") ;
+////					baseEndPoints = parseDialAppinfoXML(status.body); // getEndpoints from dialAppInfoXML
+						baseEndPoints = parseDialAppinfoXMLXpath(status.body); // getEndpoints from dialAppInfoXML
+						if( baseEndPoints != null ) {
+							if( baseEndPoints.get("HYBRIDCAST_PROTOCOL_VERSION") != null ) {//after Ver2.1
+								this.hybridcastProtocolVersion = baseEndPoints.get("HYBRIDCAST_PROTOCOL_VERSION");
+								this.serverInfo = baseEndPoints.get("SERVER_INFO");
+								this.serverInfoProtocolVersion = this.hybridcastProtocolVersion;
+								setRestBaseURL(baseEndPoints.get("BASEURL"));
+								setWSURL(baseEndPoints.get("WSURL"));
+								this.allowBroadcastOrientedManagedApp = (baseEndPoints.get("allowBroadcastOrientedManagedApp").equals("true"))? true : false ;
+								this.allowBroadcastIndependentManagedApp = (baseEndPoints.get("allowBroadcastIndependentManagedApp").equals("true"))? true : false ;
+							}
+							else {//before Ver2.1
+								this.serverInfo = baseEndPoints.get("SERVER_INFO");
+								this.serverInfoProtocolVersion = baseEndPoints.get("PROTOCOL_VERSION");
+								setRestBaseURL(baseEndPoints.get("BASEURL"));
+								setWSURL(baseEndPoints.get("WSURL"));
+							}
+							// success to get info about HybridcastConnectInformation from TV Set.
+							status.setStatus(TVRCStatus.Status.OK.code(), status.body, "") ;
+						}
+						else {
+							status.setStatus(TVRCStatus.Status.BadRequestInternalProcessing.code(), status.body, "") ;
+							devType = DIALInterface.devType;
+						}
 					}else{
 						status.setStatus(TVRCStatus.Status.BadRequestInternalProcessing.code(), status.body, "") ;
+						devType = DIALInterface.devType;
 					}
 				}catch (JSONException e) {
 					logger.error("JsonException:  NotMatch DIALAPIinfomation");
 					logger.error("JsonException in getAppInfo: " + e);
-					// in JSONException, fail to get info about HybridcastConnectInformation from TV Set => Internal BadRequest 
+					// in JSONException, fail to get info about HybridcastConnectInformation from TV Set => Internal BadRequest
 					status.setStatus(TVRCStatus.Status.BadRequestInternalProcessing.code(), "", "NotMatch DIALAPIinfomation");
+					devType = DIALInterface.devType;
 				}catch(SAXException e){
-					logger.error("applicationURL Error: Application Information Schama Error");
+					logger.error("applicationURL Error: Application Information Schema Error");
 					logger.error("GetAppInfoError: " + e);
 					// in general Exception, fail to get info about HybridcastConnectInformation from TV Set => Internal BadRequest
 					status.setStatus(TVRCStatus.Status.BadRequestInternalProcessing.code(), "", "NotMatch DIALAPIinfomation");
-					devType = devinfo.getMaker().toUpperCase();
+//					devType = devinfo.getMaker().toUpperCase();
+					devType = DIALInterface.devType;
 				}catch(Exception e){
 					logger.error("applicationURL Error:  NotMatch DIALAPIinfomation");
 					logger.error("GetAppInfoError: " + e);
 					// in general Exception, fail to get info about HybridcastConnectInformation from TV Set => Internal BadRequest
 					status.setStatus(TVRCStatus.Status.BadRequestInternalProcessing.code(), "", "NotMatch DIALAPIinfomation");
-					devType = devinfo.getMaker().toUpperCase();
+//					devType = devinfo.getMaker().toUpperCase();
+					devType = DIALInterface.devType;
 				}
 			}else{
-				devType = devinfo.getMaker().toUpperCase();
+//				devType = devinfo.getMaker().toUpperCase();
+				devType = DIALInterface.devType;
 				status.setStatus(status.status, "", "Error in requesting ApplicationURL");
 			}
 		}
@@ -385,15 +430,94 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 		return status;
 	}
 
-
 	/**
 	 *  XMLparseAndSet.
-	 * 
+	 *
 	 * @param XMLString
 	 * @return ハイコネ仕様の受信機ごとに異なるversionやendpointのbaseURL、informationのリスト
 	 * @throws Exception 例外
 	 * @throws JSONException JSON処理における例外
 	 */
+	private Map<String,String> parseDialAppinfoXMLXpath(String XMLString) throws Exception{
+		Map<String, String> basepoints = new HashMap<String, String>();
+		try{
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder documentBuilder = factory.newDocumentBuilder();
+			Document document = documentBuilder.parse(new ByteArrayInputStream(XMLString.getBytes("UTF-8")));
+			Element root = document.getDocumentElement();
+			NodeList rootChildren = root.getChildNodes();
+			String namespace = null;
+
+			if( root.getNodeName().equals("service") ) {
+				NamedNodeMap smap = root.getAttributes();
+//				logger.debug("SSS :" + smap.getNamedItem("xmlns:iptv") );
+				namespace =  (smap.getNamedItem("xmlns:iptv")!=null)? "iptv:" : "";
+			}
+
+			for(int i=0; i < rootChildren.getLength(); i++) {
+				Node node = rootChildren.item(i);
+//				logger.debug("AAA node:" + node.getNodeName() );
+
+				if( node.getNodeName().equals("additionalData") ) {
+					NodeList deviceChildren = node.getChildNodes();
+					for(int j=0; j < deviceChildren.getLength(); j++) {
+						Node devnode = deviceChildren.item(j);
+//						logger.debug("BBB dev:" + devnode.getNodeName() );
+						if (devnode.getNodeName().equals(namespace + "X_Hybridcast_ServerInfo")) {
+							String serverInfo = devnode.getTextContent();
+							String serverInfoProtocolVersion = serverInfo.split(";")[1];
+							basepoints.put("SERVER_INFO", serverInfo);
+							basepoints.put("PROTOCOL_VERSION", serverInfoProtocolVersion);
+							logger.debug("SERVER_INFO : " + serverInfo );
+							logger.debug("PROTOCOL_VERSION : " + serverInfoProtocolVersion );
+						}
+						else if (devnode.getNodeName().equals(namespace + "X_Hybridcast_TVControlURL")) {
+							String restBaseURL = devnode.getTextContent();
+							basepoints.put("BASEURL", restBaseURL );
+							logger.debug("BASEURL : " + restBaseURL );
+						}
+						else if (devnode.getNodeName().equals(namespace + "X_Hybridcast_App2AppURL")) {
+							String websocketUrl = devnode.getTextContent();
+							basepoints.put("WSURL", websocketUrl);
+							logger.debug("WSURL : " + websocketUrl );
+						}
+						else if (devnode.getNodeName().equals(namespace + "X_Hybridcast_ProtocolVersion")) {
+							String hybridcastProtocolVersion = devnode.getTextContent();
+							basepoints.put("HYBRIDCAST_PROTOCOL_VERSION", hybridcastProtocolVersion);
+							logger.debug("HYBRIDCAST_PROTOCOL_VERSION : " + hybridcastProtocolVersion );
+						}
+						else if (devnode.getNodeName().equals(namespace + "X_Hybridcast_ExternalLaunch")) {
+							NamedNodeMap mmap = devnode.getAttributes();
+							Node bonode = mmap.getNamedItem("allowBroadcastOrientedManagedApp");
+							if( bonode != null ) {
+								basepoints.put("allowBroadcastOrientedManagedApp", bonode.getNodeValue().toLowerCase());
+							}
+							Node binode = mmap.getNamedItem("allowBroadcastIndependentManagedApp");
+							if( binode != null ) {
+								basepoints.put("allowBroadcastIndependentManagedApp", binode.getNodeValue().toLowerCase());
+							}
+							logger.debug("allowBroadcastOrientedManagedApp : " + bonode.getNodeValue().toLowerCase() );
+							logger.debug("allowBroadcastIndependentManagedApp : " + binode.getNodeValue().toLowerCase() );
+						}
+					}
+				}
+			}
+		}catch(Exception e){
+			logger.error("parseDialAppinfoXMLXpath: " + e);
+			basepoints = null;
+		}
+		return basepoints;
+	}
+
+	/**
+	 *  XMLparseAndSet.
+	 *
+	 * @param XMLString
+	 * @return ハイコネ仕様の受信機ごとに異なるversionやendpointのbaseURL、informationのリスト
+	 * @throws Exception 例外
+	 * @throws JSONException JSON処理における例外
+	 */
+/*****
 	private Map<String,String> parseDialAppinfoXML(String XMLString) throws Exception, JSONException{
 		Map<String, String> basepoints = new HashMap<String, String>();
 		try{
@@ -429,7 +553,8 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 			websocketUrl = getXMLJSONDataWithNamespace(addData, namespace, "X_Hybridcast_App2AppURL");
 			basepoints.put("WSURL", websocketUrl);
 
-			if(serverInfoProtocolVersion.equals("2.0")) // version2.0以上のみTVControlのbaseurlがある
+//			if(serverInfoProtocolVersion.equals("2.0")) // version2.0以上のみTVControlのbaseurlがある
+			if(serverInfoProtocolVersion.equals("2.0") ||  serverInfoProtocolVersion.equals("2.1")) // version2.0以上のみTVControlのbaseurlがある
 			{
 				// TVControlURL の存在確認と取得処理とエラー処理
 				restBaseURL =  getXMLJSONDataWithNamespace(addData, namespace, "X_Hybridcast_TVControlURL");
@@ -439,16 +564,20 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 		}catch (JSONException e) {
 			logger.error("JsonException:  NotMatch DIALAPIinfomation");
 			logger.error("JsonException in getAppInfo: " + e);
+			basepoints = null;
 		}catch(Exception e){
 			logger.error("applicationURL Error:  NotMatch DIALAPIinfomation");
 			logger.error("GetAppInfoError: " + e);
+			basepoints = null;
 		}
 		return basepoints;
 	}
+****/
 
 	/**
 	 * Namespace入りのXMLtoJSONしたデータのフィールド抽出。
 	*/
+/****
 	private String getXMLJSONDataWithNamespace(JSONObject JSData, String namespace, String fieldname) throws Exception, JSONException {
 		// fieldnameの存在確認と取得処理とエラー処理
 		String fieldData = "";
@@ -464,12 +593,12 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 		}
 		return fieldData;
 	}
-
+****/
 
 	/**
 	 * baseURL設定。
 	 * ハイコネ仕様における各受信機の提供するハイコネのRestAPIのendpointURLのリストをセットする。
-	 * 
+	 *
 	 * @param restBaseURL ハイコネ仕様における各受信機の提供するハイコネのRestAPIのendpointURLのprefixURL
 	 */
 	@Override
@@ -503,7 +632,7 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 
 	/**
 	 * メディア利用可否情報の取得。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
 	 * @throws Exception 例外
@@ -516,7 +645,7 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 
 	/**
 	 * 編成チャンネル情報の取得。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param media 取得したい放送メディア（TD/BS/CS）
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
@@ -550,7 +679,7 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 
 	/**
 	 * 受信機状態の取得。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
 	 * @throws Exception 例外
@@ -563,7 +692,7 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 
 	/**
 	 * ハイブリッドキャスト選局・アプリケーション起動。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param mode tune: 選局、app: 選局+ハイブリッドキャスト起動
 	 * @param appinfo 選局とハイブリッドキャスト起動のリソース指定のためのJSON文字列
@@ -588,7 +717,7 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 
 	/**
 	 * 起動アプリケーション可否情報の取得。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
 	 * @throws Exception 例外
@@ -602,7 +731,7 @@ logger.debug("Raw Err Res: " + res + " url: " + url);
 
 	/**
 	 * WebSocketの接続。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
 	 * @throws Exception 例外
@@ -672,7 +801,7 @@ logger.error("connWebsocket http/ws connection exception message found: [" + exc
 
 	/**
 	 * WebSocketのListenerの追加アップデート。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param listenerName 登録するwebsocket通信の受信データ処理のためのcallbackListenerの名前
 	 * @param listener 登録するListenerのHClistenerとしてのインスタンス
@@ -709,7 +838,7 @@ logger.error("connWebsocket http/ws connection exception message found: [" + exc
 
 	/**
 	 * WebSocketのListenerの削除。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param listenerName 削除するwebsocket通信の受信データ処理のためのcallbackListenerの名前
 	 * @return 削除したlistenerName
@@ -727,7 +856,7 @@ logger.error("connWebsocket http/ws connection exception message found: [" + exc
 
 	/**
 	 * WebSocketのListenerのListener名リスト。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return 登録されているwebsocketのListenerNameリスト
 	 * @throws Exception 例外
@@ -746,7 +875,7 @@ logger.error("connWebsocket http/ws connection exception message found: [" + exc
 
 	/**
 	 * WebSocketの切断。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
 	 * @throws Exception 例外
@@ -781,7 +910,7 @@ logger.error("connWebsocket http/ws connection exception message found: [" + exc
 	/**
 	 * WebSocketでのテキストメッセージ送信。
 	 * 任意のメッセージフォーマットをWS経由で送信するAPI。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param text websocketで送信する任意の文字列データ
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
@@ -808,7 +937,7 @@ logger.error("connWebsocket http/ws connection exception message found: [" + exc
 	/**
 	 * WebSocketでの送信（リスナー付き）。
 	 * 任意のメッセージフォーマットをWS経由で送信するAPI。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param text websocketで送信する任意の文字列データ
 	 * @param listener 送信と同時に仕掛けたいListener(HCListenerのインスタンス)
@@ -858,7 +987,7 @@ logger.error("connWebsocket http/ws connection exception message found: [" + exc
 	/**
 	 * sendTextToHostDeviceOverWS。
 	 * ハイコネ仕様のメッセージフォーマットをWS経由で送信するAPI。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param sendtextStr websocketで送信するHybridcastHTMLへ送信する文字列データ
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
@@ -882,7 +1011,7 @@ logger.error("connWebsocket http/ws connection exception message found: [" + exc
 	/**
 	 * requerstUrlOverWS.
 	 * ハイコネ仕様のメッセージフォーマットで受信機が保有するsetURLデータのリクエストメッセージをWS経由で送信するAPI。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
 	 * @throws Exception 例外
@@ -904,7 +1033,7 @@ logger.error("connWebsocket http/ws connection exception message found: [" + exc
 	/**
 	 * requerstUrlOverWS with Listener.
 	 * ハイコネ仕様のメッセージフォーマットで受信機が保有するsetURLデータのリクエストメッセージをWS経由で送信するAPI。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param listener 送信と同時に仕掛けたいListener(HCListenerのインスタンス)
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
@@ -928,7 +1057,7 @@ logger.error("connWebsocket http/ws connection exception message found: [" + exc
 	/**
 	 * extensionsCommandOverWS.
 	 * ハイコネ仕様のメッセージフォーマットで受信機制御のためのリクエストメッセージ（コマンド）をWS経由で送信するAPI。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param commandStr 制御コマンド
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト

@@ -11,12 +11,12 @@ apply plugin: 'java'
 apply plugin: 'java-library'
 apply plugin: 'project-report'
 
-version = 'sample-v2.0'
+version = 'sample-v2.1'
 sourceCompatibility = '1.8' // -source
 targetCompatibility = '1.8' // -target
 
 ext {
-    sdkversion = '2.0.0'
+    sdkversion = '2.1.0'
 }
 
 sourceSets {

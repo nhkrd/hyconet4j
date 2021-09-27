@@ -11,12 +11,12 @@ apply plugin: 'java'
 apply plugin: 'java-library'
 apply plugin: 'project-report'
 
-version = '2.0.0'
+version = '2.1.0'
 sourceCompatibility = '1.8' // -source
 targetCompatibility = '1.8' // -target
 
 ext {
-    versionCode = 20200709
+    versionCode = 20210907
 }
 repositories {
     mavenCentral()

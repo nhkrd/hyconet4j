@@ -24,6 +24,8 @@ public interface DIALInterface {
 	public static final String mimeParameter = mimetype + "; " + charset;
 	public static final String accessControlAllowOrigin = "";
 
+	public static final String devType = "DIAL";
+
 	/**
 	 * DIAL Rest Service APIs
 	 */

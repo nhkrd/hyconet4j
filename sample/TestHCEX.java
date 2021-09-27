@@ -167,7 +167,7 @@ System.out.println("Start");
 
 
 		Debug.getDebug().off();
-		
+
 
 		//機器へのコマンド送出
 		while(true) {
@@ -198,7 +198,7 @@ System.out.println("Start");
 
 
 			switch(cmdid){
-			
+
 			case "VK_help": // コマンドと引数の関係などわかりにくいのでコマンドヘルプを作成
 				showCommandList();
 				break;
@@ -343,7 +343,81 @@ System.out.println("Start");
 				assertThat(status.status, isIn(Arrays.asList((-1), 200, 201, 300, 400, 403, 404, 500, 503, 505, 50200, 50300, 50400, 50500)));
 				jsonSchemaValidator("./hcxp-json-schema/startAIT_response_schema.json", status);
 				break;
-
+			case "VK_startbia":
+				if(inputparam.equals("")) inputparam = "http://127.0.0.1:8887/ait/testbia.ait";
+				if(inputparam2.equals("")) inputparam2 = "0";
+				if(inputparam3.equals("")) inputparam3 = "0";
+				JSONObject chobj5 = new JSONObject();
+				try{
+					chobj5.put("resource", new JSONObject()
+						.put("original_network_id", 32736)
+						.put("transport_stream_id", 32736)
+						.put("service_id", 1024))
+					.put("hybridcast", new JSONObject()
+						.put("orgid", inputparam2)
+						.put("appid", inputparam3)
+						.put("aiturl", inputparam)
+					);
+				}catch(Exception e){
+					System.out.println(e);
+				}
+				status = tvdev.startAITControlledApp( "bia", chobj5.toString() );
+				System.out.println( "Code: " + status.status);
+				System.out.println( "Body: " + status.body);
+				System.out.println( "Error: " + status.err);
+				assertNotNull(status);
+				assertThat(status.status, isIn(Arrays.asList((-1), 200, 201, 300, 400, 403, 404, 500, 503, 505, 50200, 50300, 50400, 50500)));
+				jsonSchemaValidator("./hcxp-json-schema/startAIT_response_schema.json", status);
+				break;
+			case "VK_tune4k8k":
+				JSONObject chobj6 = new JSONObject();
+				try{
+					chobj6.put("resource", new JSONObject()
+						.put("original_network_id", 100)
+						.put("tlv_stream_id", 101)
+						.put("service_id", 1024))
+					.put("hybridcast", new JSONObject()
+						.put("orgid", 0)
+						.put("appid", 0)
+						.put("aiturl", inputparam)
+					);
+				}catch(Exception e){
+					System.out.println(e);
+				}
+				status = tvdev.startAITControlledApp( "tune", chobj6.toString() );
+				System.out.println( "Code: " + status.status);
+				System.out.println( "Body: " + status.body);
+				System.out.println( "Error: " + status.err);
+				assertNotNull(status);
+				assertThat(status.status, isIn(Arrays.asList((-1), 200, 201, 300, 400, 403, 404, 500, 503, 505, 50200, 50300, 50400, 50500)));
+				jsonSchemaValidator("./hcxp-json-schema/startAIT_response_schema.json", status);
+				break;
+			case "VK_startapp4k8k":
+				if(inputparam.equals("")) inputparam = "http://127.0.0.1:8887/ait/testbia.ait";
+				if(inputparam2.equals("")) inputparam2 = "1";
+				if(inputparam3.equals("")) inputparam3 = "1";
+				JSONObject chobj7 = new JSONObject();
+				try{
+					chobj7.put("resource", new JSONObject()
+						.put("original_network_id", 100)
+						.put("tlv_stream_id", 101)
+						.put("service_id", 1024))
+					.put("hybridcast", new JSONObject()
+						.put("orgid", Integer.parseInt(inputparam2))
+						.put("appid", Integer.parseInt(inputparam3))
+						.put("aiturl", inputparam)
+					);
+				}catch(Exception e){
+					System.out.println(e);
+				}
+				status = tvdev.startAITControlledApp( "app", chobj7.toString() );
+				System.out.println( "Code: " + status.status);
+				System.out.println( "Body: " + status.body);
+				System.out.println( "Error: " + status.err);
+				assertNotNull(status);
+				assertThat(status.status, isIn(Arrays.asList((-1), 200, 201, 300, 400, 403, 404, 500, 503, 505, 50200, 50300, 50400, 50500)));
+				jsonSchemaValidator("./hcxp-json-schema/startAIT_response_schema.json", status);
+				break;
 
 			case "VK_gettaskstatus":
 				status = tvdev.getTaskStatus();
@@ -412,7 +486,7 @@ System.out.println("Start");
 				// devinfo export as String(JSON)
 				String devSessionJSONString = tvdev.export();
 				System.out.println("Export Devinfo JSON String: " + devSessionJSONString);
-		
+
 				// Devinfo再作成
 				TVRCDevinfo reGenDevInfo = new TVRCDevinfo().load(devSessionJSONString);
 
@@ -478,6 +552,9 @@ System.out.println("Start");
 		+ "VK_startapp2 [AITURL]" + "\n"
 		+ "VK_tune1" + "\n"
 		+ "VK_tune2" + "\n"
+		+ "VK_startbia [AITURL]" + "\n"
+		+ "VK_tune4k8k" + "\n"
+		+ "VK_startapp4k8k [AITURL]" + "\n"
 		+ "VK_gettaskstatus" + "\n"
 		+ "VK_getstatus" + "\n"
 		+ "VK_connws" + "\n"
@@ -588,13 +665,13 @@ System.out.println("Start");
 	private static boolean jsonSchemaValidator(String schemapath, TVRCStatus status){
 		boolean teststatus = true;
 		String expectedcode = "";
-		
+
 		//status.status(http headerのcode)と http bodyのhead->code が等しいかのチェック
 		if (Objects.nonNull(status.body) && status.body != ""){
 			try{
 				JSONObject jsonObject = new JSONObject(status.body);
 				Integer body_code = jsonObject.getJSONObject("head").getInt("code");
-			
+
 				if (status.status != body_code){
 					System.out.println(">>>>>>>>>>>>     ERROR INFO    <<<<<<<<<<<<<<<<");
 					GreenRedPrintln(">> status code mismatching in JSON : ERROR", "red");

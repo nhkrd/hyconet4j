@@ -1,26 +1,25 @@
 # hyconet4j
 
-Hybridcast-Connect reference SDK for Java
+"ハイコネライブラリ" for Java
 
-[Japanese](./README_JP.md)
+[English](./README.md) 
 
-## Overview
+## 概要
 
-"hyconet4j" is the java based reference implementation SDK of the "Hybridcast-Connect" that was standardized at Sep.2018 in IPTV Forum Japan. Hybridcast-Connect can realize to control some parts of the functions of a tuner on a TV Set from a application outside of the tuner , and communicate with text message between the TV Set and some applications.
-The OSS, "hyconet4j" is the part of the test tool that has been utilized as conformance test tool of the "Hybridcast-Connect" protocol in IPTV Forum Japan.
+hyconet4jは、2018年9月にIPTV Forum Japanで標準規格化された「ハイブリッドキャストコネクト」(以後、ハイコネ)のプロトコルを使うためのリファレンスSDK（ハイコネライブラリのJava実装）です。ハイコネを利用すると、ハイブリッドキャスト対応テレビ（受信機）の一部の機能を、連携端末のアプリケーションから制御でき、その受信機および受信機上のHybridcastサービスのブラウザアプリケーションと通信もできます。本SDKはハイコネのプロトコルテストで利用されているツールの一部をOSS化したものです。
 
-For more detail, see [Hybridcast-Connect instruction](./HybridcastConnect.md). For use of "hyconet4j", see [LICENSE](./LICENSE.txt) and [NOTICE](./NOTICE.txt).
+詳しくは、[About "Hybridcast-Connect"](./HybridcastConnect.md)を参照ください。本ソフトウェアの利用に関しては、LICENSEおよびNOTICEファイルを参照ください。
 
 ![Hybridcast-Connect Overview](./docs/imgs/hybridcast-connect-overview.png)
 
 - Reference
     - ["Hybridcast-Connect" Overview](./HybridcastConnect.md)
-    - [IPTVFJ STD-0013 "Hybridcast Operational Guideline"](https://www.iptvforum.jp/download/input.html)
+    - [IPTVFJ STD-0013 "ハイブリッドキャスト運用規定"](https://www.iptvforum.jp/download/input.html)
     - [W3C TPAC2018 Media&Entertainment IG "RecentAchievementOfHybridcast in TPAC2018"](https://www.w3.org/2011/webtv/wiki/images/4/45/RecentAchievementHybridcast_TPAC20181022.pdf)
     - [W3C TPAC2019 Media&Entertainment IG "RecentAchievementOfHybridcast in TPAC2019"](https://www.w3.org/2011/webtv/wiki/images/d/d1/MediaTimedEventsInHybridcast_TPAC20190916.pdf)
     - [W3C TPAC2020 Media&Entertainment IG "RecentAchievementOfHybridcast in TPAC2020"](https://www.w3.org/2011/webtv/wiki/images/2/22/RecentUpdateHybridcast_TPAC20201021_%281%29.pdf)
 
-## Environment
+## 環境
 
 - Java8-SE(JDK8-191+)互換JDK
     - OpenJDK 8+
@@ -28,9 +27,9 @@ For more detail, see [Hybridcast-Connect instruction](./HybridcastConnect.md). F
 - Android0S 8+ に組込ライブラリとして動作
 - gradle(4.10+)でのコンパイル
 
-## Build
+## ビルド
 
-run gradle commmand as follows.
+gradleを利用してjarを生成する。
 
 ```bash
 # gradleでビルド
@@ -40,53 +39,54 @@ $ ls ./build/libs
 >> hyconet4j-x.y.z.jar
 ```
 
-## Directories
+## 構成
 
 ### ./sample
 
-- Test*.java (sample code)
-- build.gradle (build setting)
-- test.sh (script for running sample code)
-- build_run.sh (Gradle build of sample code, and running test.sh)
+- Test*.java (サンプルコード)
+- build.gradle (ビルド設定)
+- test.sh (サンプル実行用スクリプト)
+- build_run.sh (サンプルコードのgradleビルドとtest.shサンプル実行までの一括スクリプト)
 
 ### ./libs
 
-Libraries copied from build directory after building "hyconet4j" from source.
+ビルド後にライブラリ一式がコピーされるディレクトリ
 
-- Jar package as SDK Library
+- Jar package as SDK Library | ソースコードからbuildしたライブラリ本体
 
     - hyconet4j-x.y.z.jar
 
 - Dependencies
 
     - commons-codec-1.10.jar
-    - netty-buffer-4.1.48.Final.jar
-    - netty-codec-4.1.48.Final.jar
-    - netty-codec-http-4.1.48.Final.jar
-    - netty-common-4.1.48.Final.jar
-    - netty-resolver-4.1.48.Final.jar
-    - netty-transport-4.1.48.Final.jar
+    - netty-buffer-4.1.23.Final.jar
+    - netty-codec-4.1.23.Final.jar
+    - netty-codec-http-4.1.23.Final.jar
+    - netty-common-4.1.23.Final.jar
+    - netty-resolver-4.1.23.Final.jar
+    - netty-transport-4.1.23.Final.jar
     - cybergarage-upnp-core-2.1.1.jar (NOTICE: see [License](#license))
     - JSON-java-20170220.jar (NOTICE: see [License](#license))
 
 ### ./build
 
-directory generated when building "hyconet4j" from source.
+ビルド時にgradleにより自動作成される。ビルド後は不要。
 
 
 ### ./docs
 
-Reference documents.
+Reference Documentsのディレクトリ。実装の例は./sampleを参照。
 
 - [apidocs.md](./docs/apidocs.md)
 
-    Simple API reference  of "hyconet4j" and examples of these APIs. For more detail, see javadoc generated when building "hyconet4j" from source.
+    ハイコネプロトコルSDKの提供するAPIとそのexample。
+    詳細はgradleによるビルド時に生成されるjavadocを参照。(build/docs/javadoc/index.html)
 
 ---
 
-## HowToUse
+## 使用方法
 
-### Example
+### 使用例
 
 
 ```java
@@ -125,10 +125,10 @@ TVRCDevinfo tvdev = TVRCMan.getTVRCDevinfo(int index);
 //
 //////// 外部起動API
 //
-// 利用可能メディア(TD:地上波、BS、CS, ABS, ACS, NCS)
+// 利用可能メディア(TD:地上波、BS、CS)
 status = tvdev.getAvailableMedia();
 // 受信機が選局可能な地上波のチャンネル（編成チャンネル）一覧
-status = tvdev.getChannelInfo("TD"); 
+status = tvdev.getChannelInfo("TD");
 
 // 選局・ハイブリッドキャスト起動のためのオブジェクト作成
 JSONObject appInfo =
@@ -146,8 +146,6 @@ JSONObject appInfo =
 status = tvdev.startAITControlledApp( "tune", appInfo.toString() );
 // 選局+Hybridacst起動要求
 status = tvdev.startAITControlledApp( "app", appInfo.toString() );
-// BroadcastIndependentApp起動
-status = tvdev.startAITControlledApp( "bia", appInfo.toString() );
 
 // 起動要求成否取得
 status = tvdev.getTaskStatus();
@@ -179,48 +177,45 @@ tvdev.sendWebsocket("---message string---");
 tvdev.disconnWebsocket();
 ```
 
-For more informatin, see [APIDOCS](./docs/apidocs.md) or sample source code.
+この他、[APIドキュメント](./docs/apidocs.md)またはサンプルコードを参照。
+
 
 ---
 
-## Sample Code Package
+## サンプルコード
 
-### Sample
+### 実行サンプル
 
-The sample shows how to run the APIs of "hyconet4j" SDK.
-
-Discovery -> Get the list of devices -> select device -> call APIs of "hybridcast-Connect" as a client.
+機器探索->機器一覧取得->機器接続（選択）->各APIのコマンドラインを使った実行ができるサンプル。
 
 ```
 .
-├── TestHCEX.java              -- sample source.
-├── build.gradle               -- gradle setting file.
-├── test.sh                    -- runner of the sample.
+├── TestHCEX.java              -- sample source. | サンプルソースコード
+├── build.gradle               -- gradle setting file. | サンプルコードをgradleでビルドするための設定
+├── test.sh                    -- runner of the sample. | サンプルコードの実行
 
 ```
 
 - run the sample as like command-line tool
 
-The sample can run by inputting command as like command-line tool.
+コマンドラインの入力で各APIを実行できる。
 
-The input command can be interpreted as follows.
-
-    - "VK_X" or "X" are interpreted as the same command.
-    - Available commands are listed in sample source. Typing "help" command can also shows the breif list of the commands.
+    - VK_の入力は省くようにサンプルは作っている
+    - 入力できるコマンドは各サンプルのソースコードをみること。"help"コマンドを入力すると簡易的なコマンドリストを参照することもできる。cmdid.eauals("VK_1")など。
 
 ```bash
-# Waiting for user input.
+# サンプル実行時のコマンドライン入力待ち状態
 
 --)  1
-（It is equivalent to the command "VK_1".
+（VK_1に相当するコマンド。
 
 --) getchannels
-（It is equivalent to the command "VK_getchannels".
+（VK_getchannelsに相当するコマンド。
 ```
 
-### How to run the sample
+### サンプルの使用方法
 
-The sample runs as follows.
+サンプルは以下で実行できる。
 
 ```bash
 $ cd sample
@@ -228,13 +223,14 @@ $ ./gradlew
 $ ./test.sh
 ```
 
-# License
+# ライセンス
 
-See [LICENSE.txt](./LICENSE.txt) and [NOTICE.txt](./NOTICE.txt).
+本ソフトウェアのライセンスについては[LICENSE.txt](./LICENSE.txt)および[NOTICE.txt](./NOTICE.txt)を参照。
+
 
 ---
 
-And see additional side information: "hyconet4j" repository includes third party's oss jar packages themselves  below in some reason:
+なお、本リポジトリは以下理由によりOSSパッケージを含みます。
 
 
 - cybergarage-upnp-core-2.1.1.jar
@@ -242,11 +238,11 @@ And see additional side information: "hyconet4j" repository includes third party
     - Repository: https://github.com/cybergarage/cybergarage-upnp
     - LICENSE: https://github.com/cybergarage/cybergarage-upnp/blob/master/LICENSE.txt
 
-    Cybergarase Public Repository can not be available frequently, so in a solution, this "hyconet4j" repository includes static jar package "cybergarage-upnp-core-2.1.1.jar" that is built with `maven install` from source code.
+    [当OSSのドキュメントに記載のMavenRepositoryのリンク](http://www.cybergarage.org:8080/maven/repo/)が不安定なため、当OSSを`maven install`して生成したjar package "cybergarage-upnp-core-2.1.1.jar"を本"hyconet4j"リポジトリは同梱しています。
 
 - JSON-java-20170220.java
 
     - Repository: https://github.com/stleary/JSON-java
     - LICENSE: https://github.com/stleary/JSON-java/blob/master/LICENSE
 
-    It is the standard Java implementation in JSON. But for Android Develepment, there's [confliction problem between JSON-java and android](https://github.com/stleary/JSON-java/wiki/JSON-Java-for-Android-developers), then this "hyconet4j" repository solves the problem by changing package name from "org.json" to "JSON-java".
+    JSONのjava実装のスタンダートのため利用。ただし、androidで利用する場合、[当OSSのpackageName "org.json"が競合する](https://github.com/stleary/JSON-java/wiki/JSON-Java-for-Android-developers)ため、本"hyconet4j"リポジトリにおいてはandroidでの利用を想定して、packageNameを"JSON-java"へ変更し、同梱しています。

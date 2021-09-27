@@ -109,14 +109,28 @@
                     ],
                     "minimum": 0,
                     "maximum": 65535
+                  },
+                  "tlv_stream_id": {
+                    "$id": "/properties/resource/properties/tlv_stream_id",
+                    "type": "number",
+                    "title": "The Tlv_stream_id Schema",
+                    "default": 0,
+                    "examples": [
+                        10000
+                    ],
+                    "minimum": 0,
+                    "maximum": 65535
                   }
                 },
                 "additionalProperties": false,
-                "required": [
-                  "original_network_id",
-                  "transport_stream_id",
-                  "service_id" 
-                ]
+                "oneOf": [
+                  {
+                      "required": [ "original_network_id", "transport_stream_id", "service_id" ]
+                  },
+                  {
+                      "required": [ "original_network_id", "tlv_stream_id", "service_id" ]
+                  }
+              ]
               }
             },
             "additionalProperties": false,

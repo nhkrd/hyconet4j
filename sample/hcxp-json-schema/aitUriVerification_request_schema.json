@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "https://github.com/nhkrd/hyconet4j/sample/hcxp-json-schema/startAIT_request_schema.json",
+    "$id": "https://github.com/nhkrd/hyconet4j/sample/hcxp-json-schema/aitUriVerification_request_schema.json",
     "type": "object",
     "properties": {
         "resource": {
@@ -61,7 +61,7 @@
                     "required": [ "original_network_id", "tlv_stream_id", "service_id" ]
                 }
             ]
-        },
+       },
         "hybridcast": {
             "$id": "/properties/hybridcast",
             "type": "object",
@@ -99,9 +99,11 @@
                 }
             },
             "additionalProperties": false,
-            "dependencies": {
-                "aiturl" : ["orgid", "appid"]
-             }
+            "required": [
+                "original_network_id",
+                "transport_stream_id",
+                "service_id"
+            ]
         }
     },
     "additionalProperties": false,

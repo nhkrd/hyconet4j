@@ -14,9 +14,19 @@ import org.xml.sax.SAXException;
  * ハイブリッドキャストコネクト仕様の抽象APIとユーティリティ抽象API
  */
 abstract public class HCEX  implements HybridcastConnectInterface {
-	protected String devType = null;	//"HCEX" or "HCEXEmulator"
+	protected String devType = null;	//"DIAL/HCC/[ProtocolVersion]"
 	protected JSONObject appStatus = null;
+
+	protected String baseURL = null;
+	protected String wsURL = null;
+	protected String serverInfo = null;
+	protected String serverInfoProtocolVersion = null;
+
 	protected String dialAppResourceURL = null;
+
+	protected String hybridcastProtocolVersion = null;
+	protected Boolean allowBroadcastOrientedManagedApp = false;
+	protected Boolean allowBroadcastIndependentManagedApp = false;
 
 	protected Map<String, String> restApiPath = HybridcastConnectInterface.restApiPath;
 
@@ -29,12 +39,14 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 	 * checkMedia
 	 * @param media the mode of broadcastMedia. | 放送メディアのモード
 	 * TD: telestrial(地上波), BS: Broadcast Satelite, CS: Communication Satelite, ALL: ALL Media(TD+BS+CS)
-	 * 
+	 * ABS: , AVS: , NCS:
+	 *
 	 * @return the result of availability wether specified mode of media is in the list.
 	 * 放送メディアモードの指定が正しいかどうかの可否判定結果
 	 */
 	public Boolean checkMedia(String media) {
-		String[] validmedia = { "ALL", "TD", "BS", "CS" };
+//		String[] validmedia = { "ALL", "TD", "BS", "CS" };
+		String[] validmedia = { "ALL", "TD", "BS", "CS", "ABS", "ACS", "NCS" };
 		return Arrays.asList(validmedia).contains( media );
 	}
 
@@ -43,7 +55,12 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 	 * @return デバイスタイプ名の文字列
 	 */
 	public String getHCEXDevType() {
-		return devType;
+		String devTypeFull = devType;
+		if( serverInfoProtocolVersion != null ) {
+			devTypeFull = devTypeFull + "/" + serverInfoProtocolVersion;
+		}
+
+		return devTypeFull;
 	}
 
 	//For Internal Use
@@ -51,7 +68,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 	/**
 	 * baseURL設定
 	 * ハイコネ仕様における各受信機の提供するハイコネのRestAPIのendpointURLのリストをセットする
-	 * 
+	 *
 	 * @param url ハイコネ仕様における各受信機の提供するハイコネのRestAPIのendpointURLのprefixURL
 	 * @throws Exception 例外
 	 */
@@ -61,7 +78,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 	/**
 	 * websocketURL設定。
 	 * ハイコネ仕様における各受信機の提供するハイコネの連携端末通信用websocketのendpointURLをセットする。
-	 * 
+	 *
 	 * @param url ハイコネ仕様における各受信機の提供するハイコネのwebsocketAPIのendpointURL
 	 * @throws Exception 例外
 	 */
@@ -73,7 +90,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 	/**
 	 * baseURL取得。
 	 * ハイコネ仕様における各受信機の提供するハイコネのRestAPIのendpointURLのbaseURL(prefix)を取得。
-	 * 
+	 *
 	 * @return ハイコネ仕様における各受信機の提供するハイコネのRestAPIのendpointURLのbaseURL(prefix)
 	 * @throws Exception 例外
 	 */
@@ -84,7 +101,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 	/**
 	 * WebsocketURL取得。
 	 * ハイコネ仕様における各受信機の提供するハイコネの連携端末通信用websocketURLを取得。
-	 * 
+	 *
 	 * @return ハイコネ仕様における各受信機の提供するハイコネの連携端末通信用websocketURL
 	 * @throws Exception 例外
 	 */
@@ -123,7 +140,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 
 	/**
 	 * ハイコネプロトコル対応確認情報の取得先URL(ApplicationURL)の取得とDialAppResourceURLの生成。
-	 * 
+	 *
 	 * @return dialAppResourceURL
 	 */
 	@Override
@@ -144,7 +161,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 
 	/**
 	 * サービスのプロトコル情報をDialAppResourceURLのレスポンスDialAppInfoXMLから取得。
-	 * 
+	 *
 	 * @return Information of protocol
 	 */
 	@Override
@@ -152,7 +169,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 
 	/**
 	 * ハイコネ仕様の受信機が提供するハイコネプロトコル情報(APIEndpoint/serverinfo/version)をDialAppResourceURLのレスポンスDialAppInfoXMLから取得。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
 	 * @throws Exception 例外
@@ -165,7 +182,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 
 	/**
 	 * WebSocketの接続。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
 	 * @throws Exception 例外
@@ -178,7 +195,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 
 	/**
 	 * WebSocketの切断。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
 	 * @throws Exception 例外
@@ -192,7 +209,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 	/**
 	 * WebSocketでのテキストメッセージ送信。
 	 * 任意のメッセージフォーマットをWS経由で送信するAPI。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param text websocketで送信する任意の文字列データ
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
@@ -207,7 +224,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 	/**
 	 * sendTextToHostDeviceOverWS.
 	 * ハイコネ仕様のメッセージフォーマットをWS経由で送信するAPI。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param sendtextStr websocketで送信するHybridcastHTMLへ送信する文字列データ
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
@@ -222,7 +239,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 	/**
 	 * requerstUrlOverWS.
 	 * ハイコネ仕様のメッセージフォーマットで受信機が保有するsetURLデータのリクエストメッセージをWS経由で送信するAPI。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
 	 * @throws Exception 例外
@@ -236,7 +253,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 	/**
 	 * requerstUrlOverWS with Listener.
 	 * ハイコネ仕様のメッセージフォーマットで受信機が保有するsetURLデータのリクエストメッセージをWS経由で送信するAPI。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param listener 送信と同時に仕掛けたいListener(HCListenerのインスタンス)
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
@@ -252,7 +269,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 	/**
 	 * extensionsCommandOverWS.
 	 * ハイコネ仕様のメッセージフォーマットで受信機制御のためのリクエストメッセージ（コマンド）をWS経由で送信するAPI。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param cmdstr 制御コマンド
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
@@ -266,7 +283,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 
 	/**
 	 * WebSocketのListenerの追加アップデート。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param listenerName 登録するwebsocket通信の受信データ処理のためのcallbackListenerの名前
 	 * @param listener 登録するListenerのHClistenerとしてのインスタンス
@@ -279,8 +296,8 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 
 	/**
 	 * WebSocketのListenerの削除。
-	 * 
-	 * 
+	 *
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param listenerName 削除するwebsocket通信の受信データ処理のためのcallbackListenerの名前
 	 * @return 削除したlistenerName
@@ -292,7 +309,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 
 	/**
 	 * WebSocketのListenerのListener名リスト
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return 登録されているwebsocketのListenerNameリスト
 	 * @throws Exception 例外
@@ -307,7 +324,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 	/**
 	 * ハイコネプロトコル仕様のRESTAPIのRequestBodyのエンコード処理を実装するAPI。
 	 * 各デバイスとのセッションごとに処理を実装できる。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param str エンコード対象の文字列
 	 * @return エンコード処理後の文字列
@@ -326,7 +343,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 	/**
 	 * ハイコネプロトコル仕様のRESTAPIのResponseBodyのデコード処理を実装するAPI。
 	 * 各デバイスとのセッションごとに処理を実装できる。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param str エンコード対象の文字列
 	 * @return エンコード処理後の文字列
@@ -345,7 +362,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 	/**
 	 * ハイコネプロトコル仕様の連携端末通信websocketを使って送信する文字列のエンコード処理を実装するAPI。
 	 * 各デバイスとのセッションごとに処理を実装できる。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param str エンコード対象の文字列
 	 * @return エンコード処理後の文字列
@@ -364,7 +381,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 	/**
 	 * ハイコネプロトコル仕様の連携端末通信websocketを使って受信した文字列のデコード処理を実装するAPI。
 	 * 各デバイスとのセッションごとに処理を実装できる。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param str エンコード対象の文字列
 	 * @return エンコード処理後の文字列
@@ -382,7 +399,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 
 	/**
 	 * ハイコネプロトコル仕様のRESTAPIのRequestHeaderを取得する処理を実装するAPI.
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return 取得・処理したRequestHeaderのHashリスト
 	 * @throws Exception 例外
@@ -397,7 +414,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 
 	/**
 	 * メディア利用可否情報の取得。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
 	 * @throws Exception 例外
@@ -410,7 +427,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 
 	/**
 	 * 編成チャンネル情報の取得。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param media 取得したい放送メディア（TD/BS/CS）
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
@@ -424,7 +441,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 
 	/**
 	 * 受信機状態の取得。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
 	 * @throws Exception 例外
@@ -437,7 +454,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 
 	/**
 	 * ハイブリッドキャスト選局・アプリケーション起動。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @param mode tune: 選局、app: 選局+ハイブリッドキャスト起動
 	 * @param appinfo 選局とハイブリッドキャスト起動のリソース指定のためのJSON文字列
@@ -452,7 +469,7 @@ abstract public class HCEX  implements HybridcastConnectInterface {
 
 	/**
 	 * 起動アプリケーション可否情報の取得。
-	 * 
+	 *
 	 * @param devinfo 実行対象のDeviceinfoオブジェクト
 	 * @return 実行結果のレスポンス・失敗情報を含むStatusオブジェクト
 	 * @throws Exception 例外
